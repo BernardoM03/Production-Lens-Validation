@@ -32,7 +32,8 @@ jobs:
           libx11-dev libx11-xcb-dev libxcb1-dev libxcb-randr0-dev libxcb-keysyms1-dev libxcb-image0-dev \
           libxrandr-dev libxrender-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libfontconfig1-dev \
           libfreetype6-dev libharfbuzz-dev libjpeg-dev libpng-dev libtiff-dev zlib1g-dev \
-          libpcre2-dev libssl-dev libopencv-dev
+          libpcre2-dev libssl-dev libopencv-dev \
+          autoconf autoconf-archive automake libtool
 
       # Cache vcpkg repo and installed packages
       - name: Cache vcpkg
