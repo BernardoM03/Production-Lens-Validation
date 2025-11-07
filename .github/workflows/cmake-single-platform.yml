@@ -34,7 +34,8 @@ jobs:
           libfreetype6-dev libharfbuzz-dev libjpeg-dev libpng-dev libtiff-dev zlib1g-dev \
           libpcre2-dev libssl-dev libopencv-dev \
           autoconf autoconf-archive automake libtool \
-          libltdl-dev
+          libltdl-dev \
+          ^libxcb.*-dev
 
       # Cache vcpkg repo and installed packages
       - name: Cache vcpkg
