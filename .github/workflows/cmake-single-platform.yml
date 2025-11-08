@@ -37,8 +37,7 @@ jobs:
           libxcb-shm0-dev libxcb-sync-dev libxcb-util-dev libxcb-xfixes0-dev libltdl-dev \
           '^libxcb.*-dev' libglu1-mesa-dev libxkbcommon-dev \
           libxcb-xkb-dev libxext-dev libxkbcommon-x11-dev libegl1-mesa-dev libxfixes-dev \
-          linux-libc-dev \
-          'xcb-util-*-devel'
+          linux-libc-dev
 
       # Cache vcpkg repo and installed packages
       - name: Cache vcpkg
