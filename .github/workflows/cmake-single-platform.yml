@@ -32,9 +32,11 @@ jobs:
           libgl1-mesa-dev
 
     - name: Configure project
+      working-directory: ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
       run: |
         cmake -B build -DCMAKE_BUILD_TYPE=Release
 
     - name: Build project
+      working-directory: ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
       run: |
         cmake --build build --parallel
