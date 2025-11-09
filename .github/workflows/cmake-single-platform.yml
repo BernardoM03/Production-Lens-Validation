@@ -44,5 +44,5 @@ jobs:
     - name: Run Batch File
       working-directory: ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
       run: |
-        git update-index --chmod=+x ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp/winBuild.bat
+        git update-index --chmod=+x ./winBuild.bat
         ./winBuild.bat ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
