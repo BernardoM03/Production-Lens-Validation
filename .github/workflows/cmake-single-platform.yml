@@ -44,4 +44,4 @@ jobs:
     - name: Run Batch File
       working-directory: ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
       run: |
-        ./WinBuild.bat ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
+        ./winBuild.bat ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
