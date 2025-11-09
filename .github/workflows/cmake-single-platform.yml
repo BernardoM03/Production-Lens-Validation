@@ -19,17 +19,24 @@ jobs:
       with:
         version: '6.5.0'
         cache: true
+        
+    - name: Install OpenCV
+    - uses: actions/checkout@v2
+    - uses: Dovyski/setup-opencv-action@v1.1
+      with:
+        opencv-version: '4.0.0'
+        cache: true
 
-    - name: Install OpenCV and dependencies
-      run: |
-        winget update -RunAsAdmin
-        winget install -RunAsAdmin -y \
-          libopencv-dev \
-          build-essential \
-          cmake \
-          ninja-build \
-          pkg-config \
-          libgl1-mesa-dev
+    # - name: Install OpenCV and dependencies
+    #   run: |
+    #     winget update -RunAsAdmin
+    #     winget install -RunAsAdmin -y \
+    #       libopencv-dev \
+    #       build-essential \
+    #       cmake \
+    #       ninja-build \
+    #       pkg-config \
+    #       libgl1-mesa-dev
 
     - name: Run Batch File
       working-directory: ./CameraSDK/OptiTrackCameraSDK_confidential_115_release-3.4.0_BUILD110/CameraSDK/samples/CameraViewerApp
