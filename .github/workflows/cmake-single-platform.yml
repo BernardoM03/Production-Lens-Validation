@@ -35,7 +35,7 @@ jobs:
     - name: Install OpenCV
       run: |
         $opencvVersion = "4.12.0"
-        $opencvUrl = "https://github.com/opencv/opencv/releases/download/${opencvVersion}/opencv-${opencvVersion}-windows.exe"
+        $opencvUrl = "https://sourceforge.net/projects/opencvlibrary/files/opencv-win/${opencvVersion}/opencv-${opencvVersion}-windows.exe/download"
         $opencvExe = "${{ github.workspace }}\opencv-installer.exe"
         
         Write-Host "Starting OpenCV download from: $opencvUrl"
@@ -44,10 +44,8 @@ jobs:
           Invoke-WebRequest -Uri $opencvUrl -OutFile $opencvExe -Verbose -TimeoutSec 600
           Write-Host "Download complete: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
         } catch {
-          Write-Host "Download failed, trying alternative mirror..."
-          $altUrl = "https://sourceforge.net/projects/opencvlibrary/files/opencv-win/4.12.0/opencv-4.12.0-windows.exe/download"
-          Invoke-WebRequest -Uri $altUrl -OutFile $opencvExe -Verbose -TimeoutSec 600
-          Write-Host "Download complete from alternative source: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
+          Write-Host "Download failed!"
+          throw $_
         }
         
         Write-Host "Extracting OpenCV installer..."
@@ -60,7 +58,6 @@ jobs:
           Write-Host "Rename complete"
         }
         Write-Host "OpenCV installation complete"
-        # Find the OpenCVConfig.cmake file
         Write-Host "Searching for OpenCVConfig.cmake..."
         $opencvConfigFiles = Get-ChildItem -Path "${{ github.workspace }}\opencv" -Recurse -Filter "OpenCVConfig.cmake"
         if ($opencvConfigFiles.Count -eq 0) {
@@ -70,7 +67,6 @@ jobs:
             $opencvConfigFiles | ForEach-Object { Write-Host $_.FullName }
         }
       shell: pwsh
-
     - name: Configure CMake
       run: |
         cmake -S "${{ github.workspace }}\CameraViewerApp" -B "${{ github.workspace }}\build" -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
