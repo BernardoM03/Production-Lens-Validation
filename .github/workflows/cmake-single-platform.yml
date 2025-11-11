@@ -38,7 +38,6 @@ jobs:
         $opencvUrl = "https://github.com/opencv/opencv/releases/download/${opencvVersion}/opencv-${opencvVersion}-windows.exe"
         $opencvExe = "${{ github.workspace }}\opencv-installer.exe"
         
-        # Download OpenCV with progress tracking and timeout
         Write-Host "Starting OpenCV download from: $opencvUrl"
         $ProgressPreference = 'Continue'
         try {
@@ -51,12 +50,10 @@ jobs:
           Write-Host "Download complete from alternative source: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
         }
         
-        # Extract OpenCV (the installer is a self-extracting archive)
         Write-Host "Extracting OpenCV installer..."
         & $opencvExe -o"${{ github.workspace }}" -y
         Write-Host "Extraction complete"
         
-        # Rename to standard location
         if (Test-Path "${{ github.workspace }}\opencv-$opencvVersion") {
           Write-Host "Renaming opencv-$opencvVersion to opencv"
           Rename-Item -Path "${{ github.workspace }}\opencv-$opencvVersion" -NewName "opencv"
