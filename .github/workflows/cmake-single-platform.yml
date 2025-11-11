@@ -32,33 +32,44 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_64'
     
-    - name: Install OpenCV
+    - name: Build OpenCV from source
       run: |
         $opencvVersion = "4.12.0"
-        $opencvZip = "${{ github.workspace }}\opencv.zip"
-        $opencvExtractDir = "${{ github.workspace }}\opencv"
-        Write-Host "Downloading OpenCV $opencvVersion .zip package..."
-        Invoke-WebRequest -Uri "https://github.com/opencv/opencv/archive/refs/tags/4.12.0.zip" -OutFile $opencvZip -Verbose -TimeoutSec 600
-        Write-Host "Extracting OpenCV..."
-        Expand-Archive -Path $opencvZip -DestinationPath $opencvExtractDir -Force
+        $srcZip = "${{ github.workspace }}\opencv-src.zip"
+        $srcDir = "${{ github.workspace }}\opencv-src"
+        $buildDir = "${{ github.workspace }}\opencv-build"
+        $installDir = "${{ github.workspace }}\opencv-install"
+
+        Write-Host "Downloading OpenCV source version $opencvVersion"
+        Invoke-WebRequest -Uri "https://github.com/opencv/opencv/archive/refs/tags/$opencvVersion.zip" -OutFile $srcZip -Verbose -TimeoutSec 600
+
+        Write-Host "Extracting OpenCV source"
+        Expand-Archive -Path $srcZip -DestinationPath $srcDir -Force
         Write-Host "Extraction complete"
-        # Find the OpenCVConfig.cmake file
-        Write-Host "Searching for OpenCVConfig.cmake..."
-        $opencvConfigFile = Get-ChildItem -Path $opencvExtractDir -Recurse -Filter "OpenCVConfig.cmake" | Select-Object -First 1
-        if ($opencvConfigFile -eq $null) {
-            Write-Host "OpenCVConfig.cmake not found!"
-            exit 1
-        } else {
-            Write-Host "Found OpenCVConfig.cmake at: $($opencvConfigFile.FullName)"
-            $env:OpenCV_DIR = $opencvConfigFile.Directory.FullName
-            Write-Host "Setting OpenCV_DIR environment variable to $env:OpenCV_DIR"
-        }
+
+        Write-Host "Configuring OpenCV build"
+        cmake -S "$srcDir\opencv-$opencvVersion" -B $buildDir -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
+          -DCMAKE_BUILD_TYPE=Release `
+          -DCMAKE_INSTALL_PREFIX=$installDir `
+          -DBUILD_TESTS=OFF `
+          -DBUILD_DOCS=OFF `
+          -DBUILD_EXAMPLES=OFF `
+          -DBUILD_PERF_TESTS=OFF `
+          -DBUILD_SHARED_LIBS=ON
+
+        Write-Host "Building and installing OpenCV"
+        cmake --build $buildDir --config Release --target INSTALL
+
+        Write-Host "OpenCV installed to $installDir"
+        # Set environment variable for downstream use
+        $env:OpenCV_DIR = "$installDir\"
+        Write-Host "Setting OpenCV_DIR to $env:OpenCV_DIR"
       shell: pwsh
 
     - name: Configure CMake
       run: |
         cmake -S "${{ github.workspace }}\CameraViewerApp" -B "${{ github.workspace }}\build" -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
-          -DOpenCV_DIR="${{ github.workspace }}\opencv\build\x64\vc17\lib" `
+          -DOpenCV_DIR="$env:OpenCV_DIR" `
           -DCMAKE_PREFIX_PATH="${{ github.workspace }}\Qt\6.10.0\msvc2022_64" `
           -DCAMERA_SDK_PATH="${{ github.workspace }}\CameraSDK"
       shell: pwsh
