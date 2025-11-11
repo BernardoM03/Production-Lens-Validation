@@ -31,8 +31,6 @@ jobs:
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2022_64'
-        install-location: ${{github.workspace}}/Qt
-        cache: true
     
     - name: Install OpenCV
       run: |
