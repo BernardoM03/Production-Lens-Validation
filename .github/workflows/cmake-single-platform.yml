@@ -35,38 +35,26 @@ jobs:
     - name: Install OpenCV
       run: |
         $opencvVersion = "4.12.0"
-        $opencvUrl = "https://sourceforge.net/projects/opencvlibrary/files/opencv-win/${opencvVersion}/opencv-${opencvVersion}-windows.exe/download"
-        $opencvExe = "${{ github.workspace }}\opencv-installer.exe"
-        
-        Write-Host "Starting OpenCV download from: $opencvUrl"
-        $ProgressPreference = 'Continue'
-        try {
-          Invoke-WebRequest -Uri $opencvUrl -OutFile $opencvExe -Verbose -TimeoutSec 600
-          Write-Host "Download complete: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
-        } catch {
-          Write-Host "Download failed!"
-          throw $_
-        }
-        
-        Write-Host "Extracting OpenCV installer..."
-        & $opencvExe -o"${{ github.workspace }}" -y
+        $opencvZip = "${{ github.workspace }}\opencv.zip"
+        $opencvExtractDir = "${{ github.workspace }}\opencv"
+        Write-Host "Downloading OpenCV $opencvVersion .zip package..."
+        Invoke-WebRequest -Uri "https://github.com/opencv/opencv/archive/refs/tags/4.12.0.zip" -OutFile $opencvZip -Verbose -TimeoutSec 600
+        Write-Host "Extracting OpenCV..."
+        Expand-Archive -Path $opencvZip -DestinationPath $opencvExtractDir -Force
         Write-Host "Extraction complete"
-        
-        if (Test-Path "${{ github.workspace }}\opencv-$opencvVersion") {
-          Write-Host "Renaming opencv-$opencvVersion to opencv"
-          Rename-Item -Path "${{ github.workspace }}\opencv-$opencvVersion" -NewName "opencv"
-          Write-Host "Rename complete"
-        }
-        Write-Host "OpenCV installation complete"
+        # Find the OpenCVConfig.cmake file
         Write-Host "Searching for OpenCVConfig.cmake..."
-        $opencvConfigFiles = Get-ChildItem -Path "${{ github.workspace }}\opencv" -Recurse -Filter "OpenCVConfig.cmake"
-        if ($opencvConfigFiles.Count -eq 0) {
+        $opencvConfigFile = Get-ChildItem -Path $opencvExtractDir -Recurse -Filter "OpenCVConfig.cmake" | Select-Object -First 1
+        if ($opencvConfigFile -eq $null) {
             Write-Host "OpenCVConfig.cmake not found!"
+            exit 1
         } else {
-            Write-Host "Found OpenCVConfig.cmake at:"
-            $opencvConfigFiles | ForEach-Object { Write-Host $_.FullName }
+            Write-Host "Found OpenCVConfig.cmake at: $($opencvConfigFile.FullName)"
+            $env:OpenCV_DIR = $opencvConfigFile.Directory.FullName
+            Write-Host "Setting OpenCV_DIR environment variable to $env:OpenCV_DIR"
         }
       shell: pwsh
+
     - name: Configure CMake
       run: |
         cmake -S "${{ github.workspace }}\CameraViewerApp" -B "${{ github.workspace }}\build" -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
