@@ -62,7 +62,13 @@ jobs:
         Write-Host "OpenCV installation complete"
         # Find the OpenCVConfig.cmake file
         Write-Host "Searching for OpenCVConfig.cmake..."
-        Get-ChildItem -Path "${{ github.workspace }}\opencv" -Recurse -Filter "OpenCVConfig.cmake" | ForEach-Object { Write-Host $_.FullName }
+        $opencvConfigFiles = Get-ChildItem -Path "${{ github.workspace }}\opencv" -Recurse -Filter "OpenCVConfig.cmake"
+        if ($opencvConfigFiles.Count -eq 0) {
+            Write-Host "OpenCVConfig.cmake not found!"
+        } else {
+            Write-Host "Found OpenCVConfig.cmake at:"
+            $opencvConfigFiles | ForEach-Object { Write-Host $_.FullName }
+        }
       shell: pwsh
 
     - name: Configure CMake
