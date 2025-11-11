@@ -60,12 +60,15 @@ jobs:
           Write-Host "Rename complete"
         }
         Write-Host "OpenCV installation complete"
+        # Find the OpenCVConfig.cmake file
+        Write-Host "Searching for OpenCVConfig.cmake..."
+        Get-ChildItem -Path "${{ github.workspace }}\opencv" -Recurse -Filter "OpenCVConfig.cmake" | ForEach-Object { Write-Host $_.FullName }
       shell: pwsh
 
     - name: Configure CMake
       run: |
         cmake -S "${{ github.workspace }}\CameraViewerApp" -B "${{ github.workspace }}\build" -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
-          -DOpenCV_DIR="${{ github.workspace }}\opencv\build" `
+          -DOpenCV_DIR="${{ github.workspace }}\opencv\build\x64\vc17\lib" `
           -DCMAKE_PREFIX_PATH="${{ github.workspace }}\Qt\6.10.0\msvc2022_64" `
           -DCAMERA_SDK_PATH="${{ github.workspace }}\CameraSDK"
       shell: pwsh
