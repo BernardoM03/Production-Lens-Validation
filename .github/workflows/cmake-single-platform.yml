@@ -60,10 +60,22 @@ jobs:
           Write-Host "Rename complete"
         }
         Write-Host "OpenCV installation complete"
+        # Check where OpenCV was actually extracted
+        Write-Host "Verifying extraction paths..."
+        Get-ChildItem -Path "${{ github.workspace }}" -Directory | ForEach-Object {
+          Write-Host "Found directory: $($_.FullName)"
+        }
         $opencvDir = Join-Path ${{ github.workspace }} "opencv"
-        Write-Host "OpenCV extracted to: $opencvDir"
-        Write-Host "Contents:"
-        Get-ChildItem -Recurse $opencvDir | ForEach-Object { Write-Host $_.FullName }
+        if (Test-Path $opencvDir) {
+          Write-Host "OpenCV extracted to: $opencvDir"
+          Write-Host "Top-level contents:"
+          Get-ChildItem $opencvDir
+        } else {
+          Write-Host "⚠️  OpenCV directory not found at expected path. Listing workspace instead:"
+          Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Directory | ForEach-Object {
+            Write-Host "Found directory: $($_.FullName)"
+          }
+        }
       shell: pwsh
 
     - name: Configure CMake
