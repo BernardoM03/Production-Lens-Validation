@@ -32,44 +32,44 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2022_64'
     
-    - name: Build OpenCV from source
+    - name: Install OpenCV
       run: |
         $opencvVersion = "4.12.0"
-        $srcZip = "${{ github.workspace }}\opencv-src.zip"
-        $srcDir = "${{ github.workspace }}\opencv-src"
-        $buildDir = "${{ github.workspace }}\opencv-build"
-        $installDir = "${{ github.workspace }}\opencv-install"
-
-        Write-Host "Downloading OpenCV source version $opencvVersion"
-        Invoke-WebRequest -Uri "https://github.com/opencv/opencv/archive/refs/tags/$opencvVersion.zip" -OutFile $srcZip -Verbose -TimeoutSec 600
-
-        Write-Host "Extracting OpenCV source"
-        Expand-Archive -Path $srcZip -DestinationPath $srcDir -Force
+        $opencvUrl = "https://github.com/opencv/opencv/releases/download/${opencvVersion}/opencv-${opencvVersion}-windows.exe"
+        $opencvExe = "${{ github.workspace }}\opencv-installer.exe"
+        
+        Write-Host "Starting OpenCV download from: $opencvUrl"
+        $ProgressPreference = 'Continue'
+        try {
+          Invoke-WebRequest -Uri $opencvUrl -OutFile $opencvExe -Verbose -TimeoutSec 600
+          Write-Host "Download complete: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
+        } catch {
+          Write-Host "Download failed, trying alternative mirror..."
+          $altUrl = "https://sourceforge.net/projects/opencvlibrary/files/opencv-win/4.12.0/opencv-4.12.0-windows.exe/download"
+          Invoke-WebRequest -Uri $altUrl -OutFile $opencvExe -Verbose -TimeoutSec 600
+          Write-Host "Download complete from alternative source: $(Get-Item $opencvExe | Select-Object -ExpandProperty Length) bytes"
+        }
+        
+        Write-Host "Extracting OpenCV installer..."
+        & $opencvExe -o"${{ github.workspace }}" -y
         Write-Host "Extraction complete"
-
-        Write-Host "Configuring OpenCV build"
-        cmake -S "$srcDir\opencv-$opencvVersion" -B $buildDir -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
-          -DCMAKE_BUILD_TYPE=Release `
-          -DCMAKE_INSTALL_PREFIX=$installDir `
-          -DBUILD_TESTS=OFF `
-          -DBUILD_DOCS=OFF `
-          -DBUILD_EXAMPLES=OFF `
-          -DBUILD_PERF_TESTS=OFF `
-          -DBUILD_SHARED_LIBS=ON
-
-        Write-Host "Building and installing OpenCV"
-        cmake --build $buildDir --config Release --target INSTALL
-
-        Write-Host "OpenCV installed to $installDir"
-        # Set environment variable for downstream use
-        $env:OpenCV_DIR = "$installDir\"
-        Write-Host "Setting OpenCV_DIR to $env:OpenCV_DIR"
+        
+        if (Test-Path "${{ github.workspace }}\opencv-$opencvVersion") {
+          Write-Host "Renaming opencv-$opencvVersion to opencv"
+          Rename-Item -Path "${{ github.workspace }}\opencv-$opencvVersion" -NewName "opencv"
+          Write-Host "Rename complete"
+        }
+        Write-Host "OpenCV installation complete"
+        $opencvDir = Join-Path ${{ github.workspace }} "opencv"
+        Write-Host "OpenCV extracted to: $opencvDir"
+        Write-Host "Contents:"
+        Get-ChildItem -Recurse $opencvDir | ForEach-Object { Write-Host $_.FullName }
       shell: pwsh
 
     - name: Configure CMake
       run: |
         cmake -S "${{ github.workspace }}\CameraViewerApp" -B "${{ github.workspace }}\build" -G "${{ env.CMAKE_GENERATOR }}" -A x64 `
-          -DOpenCV_DIR="$env:OpenCV_DIR" `
+          -DOpenCV_DIR="${{ github.workspace }}\opencv\build\x64\vc17\lib" `
           -DCMAKE_PREFIX_PATH="${{ github.workspace }}\Qt\6.10.0\msvc2022_64" `
           -DCAMERA_SDK_PATH="${{ github.workspace }}\CameraSDK"
       shell: pwsh
